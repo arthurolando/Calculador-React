@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 export default function App() {
     const [valorTela, setValorTela] = useState("");
     const [resultado, setResultado] = useState(0);
     const [operacao, setOperacao] = useState(false);
-    const [acumulador, setAcumulador] = useState(0);
 
     const Tela=(val, res)=>{
         return(
             <div>
-                <span>{val}</span>=
+                <span>{val}</span>{" = "}
                 <span style={{color:"#3aa"}}>{res}</span>
             </div>
         )
@@ -21,38 +20,101 @@ export default function App() {
         );
     }
 
+    const DetectOperator=(d)=>{
+        if(d == "+" || d == "/" || d == "*" || d == "-") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    const DetectaUltimo=()=>{
+        if (DetectOperator(valorTela.substring(valorTela.length - 1, valorTela.length))) {
+            return 1; 
+        }
+        
+        if (DetectOperator(valorTela.substring(valorTela.length - 2, valorTela.length - 1)) && valorTela.substring(valorTela.length - 1, valorTela.length) == " ") {
+            return 2;          
+        }
+        return 3;
+    }
+
+
+
     const addDigitoTela=(d) => {
-        if ((d == "+" || d == "/" || d == "*" || d == "-") && operacao) {
-            setOperacao(false);
-            setValorTela(resultado + " " + d);
-            return;
+        if (DetectOperator(d)) {
+            if (DetectaUltimo() == 1) {
+                let vtela=valorTela;
+                vtela=vtela.substring(0,(vtela.length-1))
+                setValorTela(vtela + d);
+                return;    
+            }
+            if (DetectaUltimo() == 2) {
+                let vtela=valorTela;
+                vtela=vtela.substring(0,(vtela.length-2))
+                setValorTela(vtela + d);
+                return;   
+            }
+            if (operacao) {
+                setOperacao(false);
+                setValorTela(resultado + " " + d);
+                return;   
+            }
+            setValorTela(valorTela + " " + d);
+        }
+        else {
+            if (DetectaUltimo() == 1) {
+                setValorTela(valorTela + " " + d);
+                return;
+            }
+            if (DetectaUltimo() == 2) {
+                setValorTela(valorTela + d);
+                return;
+            }
+            if (valorTela.substring(valorTela.length - 1, valorTela.length) == " ") {
+                let vtela=valorTela;
+                vtela=vtela.substring(0,(vtela.length-1))
+                setValorTela(vtela + d);  
+                return;
+            }
+            setValorTela(valorTela + d);
         }
         if (operacao) {
             setValorTela(d);
             setOperacao(false);
-            return
+            return;
         }
-        setValorTela(valorTela + d);
     }
+
     const limparMemoria=()=>{
         setOperacao(false);
         setValorTela('');
         setResultado(0);
-        setAcumulador(0);
-        return
+        return;
     }
 
     const Operacao=(oper)=>{
         if (oper=='bs') {
-            let vtela=valorTela;
-            vtela=vtela.substring(0,(vtela.length-1))
+            let vtela = valorTela;
+            let stringDeletada = valorTela;
+
+            vtela = vtela.substring(0, vtela.length - 1);
+            
+            stringDeletada = stringDeletada.substring(stringDeletada.length - 1, stringDeletada.length);
+
+            if (stringDeletada == " ") {
+                vtela = vtela.substring(0, vtela.length - 3);
+                setValorTela(vtela);
+                setOperacao(false);
+                return;
+            }
             setValorTela(vtela);
             setOperacao(false);
             return;
         }
         try{
             const r=eval(valorTela);
-            setAcumulador(r);
             setResultado(r)
             setOperacao(true);
         }catch{
