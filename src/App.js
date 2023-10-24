@@ -17,12 +17,54 @@ const MenorNatural = (a, b) => {
 }
 
 const DetectaOperacao=(d)=>{
-    if(d === "+" || d === "/" || d === "*" || d === "-") {
+    if(d === "+" || d === "/" || d === "*" || d === "-" || d === "%") {
         return true;
     }
     else {
         return false;
     }
+}
+
+
+const DetectaUltimo=(valorTela)=>{
+    if (valorTela === "") {
+        return 1;
+    }
+    if (DetectaOperacao(valorTela.substring(valorTela.length - 1, valorTela.length))) {
+        return 2; 
+    }
+    if (valorTela.substring(valorTela.length - 1, valorTela.length) === "(") {
+        return 3;          
+    }
+}
+
+const EfetuaPorcentagem = (vtela) => {
+    while (vtela.indexOf("%") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("%")) + "/100*" + vtela.substring(vtela.indexOf("%") +1, vtela.length);
+    }
+    return vtela;
+}
+
+const RemoveZeroEsquerda = (vtela) => {
+    if (vtela.indexOf("0") === 0) {
+        vtela = vtela.substring(1, vtela.length);
+    }
+    while(vtela.indexOf("+0") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("+0") +1) + vtela.substring(vtela.indexOf("+0") +2, vtela.length); 
+    }
+    while(vtela.indexOf("-0") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("-0") +1) + vtela.substring(vtela.indexOf("-0") +2, vtela.length); 
+    }
+    while(vtela.indexOf("/0") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("/0") +1) + vtela.substring(vtela.indexOf("/0") +2, vtela.length); 
+    }
+    while(vtela.indexOf("*0") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("*0") +1) + vtela.substring(vtela.indexOf("*0") +2, vtela.length); 
+    }
+    while(vtela.indexOf("(0") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("(0") +1) + vtela.substring(vtela.indexOf("(0") +2, vtela.length); 
+    }
+    return vtela;
 }
 
 export default function App() {
@@ -47,17 +89,6 @@ export default function App() {
         );
     }
 
-    const DetectaUltimo=()=>{
-        if (DetectaOperacao(valorTela.substring(valorTela.length - 1, valorTela.length))) {
-            return 1; 
-        }
-        
-        if (valorTela.substring(valorTela.length - 1, valorTela.length) === " " && DetectaOperacao(valorTela.substring(valorTela.length - 2, valorTela.length - 1))) {
-            return 2;          
-        }
-        return 3;
-    }
-
     const addDigitoTela=(d) => {
         if (d === ".") {
             let valorTelaInvertido = valorTela.split("").reverse().join("");
@@ -65,11 +96,13 @@ export default function App() {
             let ultimaSub = valorTelaInvertido.indexOf("-");
             let ultimaMult = valorTelaInvertido.indexOf("*");
             let ultimaDiv = valorTelaInvertido.indexOf("/");
+            let ultimaPorCem = valorTelaInvertido.indexOf("%");
 
             let ultimafunc = MenorNatural(valorTela.length, ultimaSoma);
             ultimafunc = MenorNatural(ultimafunc, ultimaSub);
             ultimafunc = MenorNatural(ultimafunc, ultimaMult);
             ultimafunc = MenorNatural(ultimafunc, ultimaDiv);
+            ultimafunc = MenorNatural(ultimafunc, ultimaPorCem);
 
             if (valorTelaInvertido.substring(0, ultimafunc).indexOf(".") !== -1) {
                 return;
@@ -77,45 +110,39 @@ export default function App() {
         }
 
         if (DetectaOperacao(d)) {
-            if (DetectaUltimo() === 1) {
+            if (DetectaUltimo(valorTela) === 0) {
+                return;
+            }
+            if (DetectaUltimo(valorTela) === 1) {
                 let vtela=valorTela;
                 vtela=vtela.substring(0,(vtela.length-1))
                 setValorTela(vtela + d);
                 return;    
             }
-            if (DetectaUltimo() === 2) {
-                let vtela=valorTela;
-                vtela=vtela.substring(0,(vtela.length-2))
-                setValorTela(vtela + d);
-                return;   
+            if (DetectaUltimo(valorTela) === 2) {
+                if(d === "%" || d === "*" || d === "/") {
+                    return;
+                }
+                setValorTela(valorTela + d);
             }
             if (operacao) {
                 setOperacao(false);
-                setValorTela(resultado + " " + d);
+                setValorTela(resultado + d);
                 return;   
-            }
-            setValorTela(valorTela + " " + d);
+            } 
+            setValorTela(valorTela + d);
+            return;
         } else {
-            if (DetectaUltimo() === 1) {
-                setValorTela(valorTela + " " + d);
-                return;
-            }
-            if (DetectaUltimo() === 2) {
+            if (DetectaUltimo(valorTela) === 1) {
                 setValorTela(valorTela + d);
                 return;
             }
-            if (valorTela.substring(valorTela.length - 1, valorTela.length) === " ") {
-                let vtela=valorTela;
-                vtela=vtela.substring(0,(vtela.length-1))
-                setValorTela(vtela + d);  
+            if (operacao) {
+                setValorTela(d);
+                setOperacao(false);
                 return;
             }
             setValorTela(valorTela + d);
-        }
-        if (operacao) {
-            setValorTela(d);
-            setOperacao(false);
-            return;
         }
     }
 
@@ -146,12 +173,9 @@ export default function App() {
             return;
         }
         try{
-            let vtela = valorTela;
-            while(vtela.indexOf(" 0") != -1) {
-                vtela = vtela.substring(0, vtela.indexOf(" 0") + 1) + vtela.substring(vtela.indexOf(" 0") + 2, vtela.length);
-                console.log(vtela)
-            }
-            const r = eval(vtela);
+            let vtela = EfetuaPorcentagem(valorTela);
+            vtela = RemoveZeroEsquerda(vtela);            
+            const r = eval(vtela || 0);
             setResultado(r)
             setOperacao(true);
         }catch{
@@ -167,8 +191,8 @@ export default function App() {
             {Tela(valorTela, resultado)}
             <div className="buttons-space">
                 {Button("AC", ()=>limparMemoria())}
-                {Button("(", ()=>addDigitoTela("("))}
-                {Button(")", ()=>addDigitoTela(")"))}
+                {Button("()", ()=>alert("Em manutenção"))}
+                {Button("%", ()=>addDigitoTela("%"))}
                 {Button("/", ()=>addDigitoTela("/"))}<br/>
                 {Button("7", ()=>addDigitoTela("7"))}
                 {Button("8", ()=>addDigitoTela("8"))}
