@@ -8,7 +8,7 @@ const MenorNatural = (a, b) => {
     if(b < 0){
         return a;
     }
-    
+
     if(a < b){
         return a;
     } else {
@@ -16,8 +16,8 @@ const MenorNatural = (a, b) => {
     }
 }
 
-const DetectOperator=(d)=>{
-    if(d == "+" || d == "/" || d == "*" || d == "-") {
+const DetectaOperacao=(d)=>{
+    if(d === "+" || d === "/" || d === "*" || d === "-") {
         return true;
     }
     else {
@@ -32,10 +32,10 @@ export default function App() {
 
     const Tela=(val, res)=>{
         return(
-            <div style={{fontSize:"20px", overflowX:"scroll", width:"400px", display:"flex"}}>
+            <div className="tela">
                 <span>
-                    <span>{val}</span>
-                    <span style={{color:"#3aa"}}>{" = "}{res}</span>
+                    <p className="valorTela">{val}</p>
+                    <p className="resultado">{res}</p>
                 </span>
             </div>
         )
@@ -43,25 +43,23 @@ export default function App() {
 
     const Button=(label, onClick)=>{
         return(
-            <button style={{height:"100px", width:"100px", fontSize:"50px"}} onClick={onClick}>{label}</button>
+            <button className="btn" onClick={onClick}>{label}</button>
         );
     }
 
     const DetectaUltimo=()=>{
-        if (DetectOperator(valorTela.substring(valorTela.length - 1, valorTela.length))) {
+        if (DetectaOperacao(valorTela.substring(valorTela.length - 1, valorTela.length))) {
             return 1; 
         }
         
-        if (DetectOperator(valorTela.substring(valorTela.length - 2, valorTela.length - 1)) && valorTela.substring(valorTela.length - 1, valorTela.length) == " ") {
+        if (valorTela.substring(valorTela.length - 1, valorTela.length) === " " && DetectaOperacao(valorTela.substring(valorTela.length - 2, valorTela.length - 1))) {
             return 2;          
         }
         return 3;
     }
 
-
-
     const addDigitoTela=(d) => {
-        if (d == ".") {
+        if (d === ".") {
             let valorTelaInvertido = valorTela.split("").reverse().join("");
             let ultimaSoma = valorTelaInvertido.indexOf("+");
             let ultimaSub = valorTelaInvertido.indexOf("-");
@@ -73,20 +71,19 @@ export default function App() {
             ultimafunc = MenorNatural(ultimafunc, ultimaMult);
             ultimafunc = MenorNatural(ultimafunc, ultimaDiv);
 
-            console.log(ultimaSoma, ultimaSub, ultimaDiv, ultimaMult, ultimafunc, valorTelaInvertido)
-            if (valorTelaInvertido.substring(0, ultimafunc).indexOf(".") != -1) {
+            if (valorTelaInvertido.substring(0, ultimafunc).indexOf(".") !== -1) {
                 return;
             }
         }
 
-        if (DetectOperator(d)) {
-            if (DetectaUltimo() == 1) {
+        if (DetectaOperacao(d)) {
+            if (DetectaUltimo() === 1) {
                 let vtela=valorTela;
                 vtela=vtela.substring(0,(vtela.length-1))
                 setValorTela(vtela + d);
                 return;    
             }
-            if (DetectaUltimo() == 2) {
+            if (DetectaUltimo() === 2) {
                 let vtela=valorTela;
                 vtela=vtela.substring(0,(vtela.length-2))
                 setValorTela(vtela + d);
@@ -99,15 +96,15 @@ export default function App() {
             }
             setValorTela(valorTela + " " + d);
         } else {
-            if (DetectaUltimo() == 1) {
+            if (DetectaUltimo() === 1) {
                 setValorTela(valorTela + " " + d);
                 return;
             }
-            if (DetectaUltimo() == 2) {
+            if (DetectaUltimo() === 2) {
                 setValorTela(valorTela + d);
                 return;
             }
-            if (valorTela.substring(valorTela.length - 1, valorTela.length) == " ") {
+            if (valorTela.substring(valorTela.length - 1, valorTela.length) === " ") {
                 let vtela=valorTela;
                 vtela=vtela.substring(0,(vtela.length-1))
                 setValorTela(vtela + d);  
@@ -130,7 +127,7 @@ export default function App() {
     }
 
     const Operacao=(oper)=>{
-        if (oper=='bs') {
+        if (oper==='bs') {
             let vtela = valorTela;
             let stringDeletada = valorTela;
 
@@ -138,7 +135,7 @@ export default function App() {
             
             stringDeletada = stringDeletada.substring(stringDeletada.length - 1, stringDeletada.length);
 
-            if (stringDeletada == " ") {
+            if (stringDeletada === " ") {
                 vtela = vtela.substring(0, vtela.length - 2);
                 setValorTela(vtela);
                 setOperacao(false);
@@ -149,7 +146,12 @@ export default function App() {
             return;
         }
         try{
-            const r=eval(valorTela);
+            let vtela = valorTela;
+            while(vtela.indexOf(" 0") != -1) {
+                vtela = vtela.substring(0, vtela.indexOf(" 0") + 1) + vtela.substring(vtela.indexOf(" 0") + 2, vtela.length);
+                console.log(vtela)
+            }
+            const r = eval(vtela);
             setResultado(r)
             setOperacao(true);
         }catch{
@@ -158,10 +160,12 @@ export default function App() {
     }
 
     return (
-        <div style={{border:"1px solid", background:"#e1e1e1"}}>
-            <h1>Calculadora</h1>
+        <div className="container">
+            <div className="titulo">
+                <h1>Calculadora</h1>
+            </div>
             {Tela(valorTela, resultado)}
-            <div style={{display:"block"}}>
+            <div className="buttons-space">
                 {Button("AC", ()=>limparMemoria())}
                 {Button("(", ()=>addDigitoTela("("))}
                 {Button(")", ()=>addDigitoTela(")"))}
