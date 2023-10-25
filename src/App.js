@@ -171,7 +171,7 @@ export default function App() {
             <div className="tela">
                 <div className="MessageBox">
                     {erroDeSistema && operacao?MessageBoxErro("Infelizmente ocorreu um erro ao efetuar seu calculo, sinto muito. Por favor, clique no botão X e abra uma issues descrevendo seu erro para que eu possa solucionar o quanto antes."):""}               
-                    {erroDeFormatacao && operacao?MessageBoxAlert("Um possivel erro de formatação foi detectado sua pergunta foi reformatada."):""}
+                    {erroDeFormatacao && operacao?MessageBoxAlert("Um possivel erro de formatação foi detectado, sua pergunta foi reformatada."):""}
                 </div>
                 <span>
                     <p className="valorTela" style={{color:((erroDeFormatacao && operacao)?"#aff":"#c1c1c1")}}>{valorTela}</p>
