@@ -2,4 +2,4 @@
 
 Uma calculadora simples feita em Javascript/React. [Acesse Aqui](https://arthurolando.github.io/Calculadora-React/)
 
-![image](https://github.com/arthurolando/Calculador-React/assets/124641219/392fa884-0b3a-4561-a591-ce783becce39)
+![image](https://github.com/arthurolando/Calculadora-React/assets/124641219/c320e6d9-af7c-491c-afdd-0692a88efd70)
