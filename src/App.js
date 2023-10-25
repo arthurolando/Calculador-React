@@ -112,7 +112,7 @@ const TratamentoParenteses=(vtela) => {
 }
 
 const TratamentoUltimoDigito=(vtela) => {
-    for(var i = 0; i < 2; i++){
+    for(var i = 0; i < 4; i++){
         switch (ClassificaUltimaLetra(vtela)) {
             case 1:
             break;
@@ -127,6 +127,11 @@ const TratamentoUltimoDigito=(vtela) => {
             case 4:
                 vtela = vtela.substring(0, vtela.length - 1);
             break;
+        }
+        let ultimo = vtela.substring(vtela.length -1, vtela.length);
+        let pnultimo = vtela.substring(vtela.length -2, vtela.length -1);
+        if (ultimo === ")" && DetectaOperacao(pnultimo)) {
+            vtela = vtela.substring(0, vtela.length - 2);
         }
     }
 
