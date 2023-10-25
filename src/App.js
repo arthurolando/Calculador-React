@@ -44,7 +44,8 @@ const ClassificaUltimaLetra=(valorTela)=>{
 
 const CorvertePorcentagem = (vtela) => {
     while (vtela.indexOf("%") !== -1) {
-        if (DetectaOperacao(vtela.substring(vtela.indexOf("%"), vtela.indexOf("%") + 1))){
+        let proximaletra = vtela.substring(vtela.indexOf("%"), vtela.indexOf("%") + 1)
+        if (DetectaOperacao(proximaletra)){
             vtela = vtela.substring(0, vtela.indexOf("%")) + "/100" + vtela.substring(vtela.indexOf("%") +1, vtela.length);
         }
         else {
@@ -91,6 +92,9 @@ const TratamentoParenteses=(vtela) => {
     while(vtela.indexOf(")(") !== -1) {
         vtela = vtela.substring(0, vtela.indexOf(")(") +1) + "*" + vtela.substring(vtela.indexOf(")(")+1, vtela.length);
     }
+    while(vtela.indexOf("%(") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf("%(") +1) + "*" + vtela.substring(vtela.indexOf("%(")+1, vtela.length);
+    }
     if (ClassificaUltimaLetra(vtela) === 3) {
         vtela = vtela.substring(0, vtela.length -1);
     }
@@ -108,7 +112,7 @@ const TratamentoParenteses=(vtela) => {
 }
 
 const TratamentoUltimoDigito=(vtela) => {
-    for(var i = 1; i < 2; i++){
+    for(var i = 0; i < 2; i++){
         switch (ClassificaUltimaLetra(vtela)) {
             case 1:
             break;
