@@ -32,9 +32,64 @@ body{
     padding: 5px;
 }
 
+.MessageBox {
+    position: relative;
+    height: 0;
+    width: 0;
+    cursor: pointer;
+    left: 410px;
+}
+
+.MessageBox .iconAlert {
+    border-radius: 20px;
+    height: 20px;
+    width: 20px;
+    background-color: #e9e83c;
+    border: solid 1px #aa0;
+    text-align: center;
+    padding: 2px 2px 4px 2px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.MessageBox .iconErro {
+    border-radius: 20px;
+    height: 20px;
+    width: 20px;
+    background-color: #eb1d1d;
+    border: solid 1px #a00;
+    text-align: center;
+    padding: 2px 2px 4px 2px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.iconErro a {
+    color: white;
+    text-decoration: none;
+}
+
+.MessageBox p{
+    background-color: #111;
+    color: #e1e1e1;
+    z-index: 3;
+    top: 10px;
+    margin-top: 10px;
+    width: 290px;
+    padding: 7px;
+    border-radius: 2px;
+    text-align: center;
+    display: none;
+    opacity: 0.9;
+    margin-bottom: 10px;
+}
+
+.MessageBox:hover p{
+    display: block;
+}
+
 .valorTela{
     font-size: 1.5em;
-    color: #c1c1c1;
     height: 30px;
 }
 
@@ -44,7 +99,12 @@ body{
 }
 
 .buttons-space{
-    background-color: red;
+    background-color: #111;
+    margin-top: 5px;
+}
+
+.row{
+    display: flex;
 }
 
 .btn{

@@ -25,25 +25,31 @@ const DetectaOperacao=(d)=>{
     }
 }
 
-
-const DetectaUltimo=(valorTela)=>{
+const ClassificaUltimaLetra=(valorTela)=>{
     if (valorTela === "") {
         return 1;
     }
-    if (DetectaOperacao(valorTela.substring(valorTela.length - 1, valorTela.length))) {
+    let ultimaletra = valorTela.substring(valorTela.length - 1, valorTela.length);
+    if (DetectaOperacao(ultimaletra)) {
         return 2; 
     }
-    if (valorTela.substring(valorTela.length - 1, valorTela.length) === "(") {
-        return 3;          
+    if (ultimaletra === "(") {
+        return 3;  
     }
-    if (valorTela.substring(valorTela.length - 1, valorTela.length) === ".") {
+    if (ultimaletra === ".") {
         return 4;          
     }
+    
 }
 
-const EfetuaPorcentagem = (vtela) => {
+const CorvertePorcentagem = (vtela) => {
     while (vtela.indexOf("%") !== -1) {
-        vtela = vtela.substring(0, vtela.indexOf("%")) + "/100*" + vtela.substring(vtela.indexOf("%") +1, vtela.length);
+        if (DetectaOperacao(vtela.substring(vtela.indexOf("%"), vtela.indexOf("%") + 1))){
+            vtela = vtela.substring(0, vtela.indexOf("%")) + "/100" + vtela.substring(vtela.indexOf("%") +1, vtela.length);
+        }
+        else {
+            vtela = vtela.substring(0, vtela.indexOf("%")) + "/100*" + vtela.substring(vtela.indexOf("%") +1, vtela.length);
+        }
     }
     return vtela;
 }
@@ -82,7 +88,10 @@ const TratamentoParenteses=(vtela) => {
             vtela = vtela.substring(0, vtela.indexOf(")"+i.toString()) +1) + "*" + vtela.substring(vtela.indexOf(")"+i.toString())+1, vtela.length);
         }
     }
-    if (DetectaUltimo(vtela) === 3) {
+    while(vtela.indexOf(")(") !== -1) {
+        vtela = vtela.substring(0, vtela.indexOf(")(") +1) + "*" + vtela.substring(vtela.indexOf(")(")+1, vtela.length);
+    }
+    if (ClassificaUltimaLetra(vtela) === 3) {
         vtela = vtela.substring(0, vtela.length -1);
     }
     let numAbre = 0;
@@ -99,19 +108,24 @@ const TratamentoParenteses=(vtela) => {
 }
 
 const TratamentoUltimoDigito=(vtela) => {
-    switch (DetectaUltimo(vtela)) {
-        case 1:
-        break;
-        case 2:
-            vtela = vtela.substring(0, vtela.length - 1);
-        break;
-        case 3:
-            vtela = vtela.substring(0, vtela.length - 1);
-        break;
-        case 4:
-            vtela = vtela.substring(0, vtela.length - 1);
-        break;
+    for(var i = 1; i < 2; i++){
+        switch (ClassificaUltimaLetra(vtela)) {
+            case 1:
+            break;
+            case 2:
+                if (vtela.substring(vtela.length - 1, vtela.length) !== "%") {
+                    vtela = vtela.substring(0, vtela.length - 1);
+                }
+            break;
+            case 3:
+                vtela = vtela.substring(0, vtela.length - 1);
+            break;
+            case 4:
+                vtela = vtela.substring(0, vtela.length - 1);
+            break;
+        }
     }
+
     return vtela;
 }
 
@@ -119,13 +133,40 @@ export default function App() {
     const [valorTela, setValorTela] = useState("");
     const [resultado, setResultado] = useState(0);
     const [operacao, setOperacao] = useState(false);
+    const [erroDeFormatacao, setErroDeFormatacao] = useState(false);
+    const [erroDeSistema, setErroDeSistema] = useState(false);
+
+    const MessageBoxAlert=(mensagem) => {
+        return(
+            <>
+                <div className="iconAlert" style={{display:(erroDeFormatacao)?"block":"none"}}>
+                    <span>!</span>
+                </div>
+                <p>{mensagem}</p>
+            </>
+        )
+    }
+    const MessageBoxErro=(mensagem) => {
+        return(
+            <>
+                <div className="iconErro" style={{display:(erroDeSistema)?"block":"none"}}>
+                    <span><a href="https://github.com/arthurolando/github-course/issues" target="_blank">X</a></span>
+                </div>
+                <p>{mensagem}</p>
+            </>
+        )
+    }
 
     const Tela=(val, res)=>{
         return(
             <div className="tela">
+                <div className="MessageBox">
+                    {erroDeSistema && operacao?MessageBoxErro("Infelizmente ocorreu um erro ao efetuar seu calculo, sinto muito. Por favor, clique no botão X e abra uma issues descrevendo seu erro para que eu possa solucionar o quanto antes."):""}               
+                    {erroDeFormatacao && operacao?MessageBoxAlert("Um possivel erro de formatação foi detectado sua pergunta foi reformatada."):""}
+                </div>
                 <span>
-                    <p className="valorTela">{val}</p>
-                    <p className="resultado">{res}</p>
+                    <p className="valorTela" style={{color:((erroDeFormatacao && operacao)?"#aff":"#c1c1c1")}}>{valorTela}</p>
+                    <p className="resultado" style={{color:((erroDeSistema && operacao)?"#ebad1d":"#fff")}}>{res}</p>
                 </span>
             </div>
         )
@@ -158,19 +199,45 @@ export default function App() {
         }
 
         if (DetectaOperacao(d)) {
-            switch (DetectaUltimo(valorTela)) {
+            switch (ClassificaUltimaLetra(valorTela)) {
                 case 1:
+                    if(d === "-") {
+                        setValorTela(valorTela + d);
+                    }
                 break;
                 case 2:
                     let vtela=valorTela;
-                    vtela=vtela.substring(0,(vtela.length-1))
-                    if(DetectaUltimo(vtela) === 3) {
+                    let ultimaletra = valorTela.substring(valorTela.length - 1, valorTela.length);
+                    let penultimaletra = valorTela.substring(valorTela.length - 2, valorTela.length -1);
+                    if (ultimaletra === "*" || ultimaletra === "/") {
+                        if (d === "-") {
+                            setValorTela(vtela + d);
+                            break
+                        }
+                        else {
+                            vtela = vtela.substring(0,(vtela.length-1)) + d;
+                        }
+                    }
+                    if (ultimaletra === "+" || ultimaletra === "-") {
+                        if ((penultimaletra === "/" || penultimaletra === "*" || penultimaletra === "(" || penultimaletra === "." || penultimaletra === "") && (d === "*" || d === "/" || d === "%")) {
+                            break;
+                        }
+                        vtela =  vtela.substring(0, vtela.length-1) + d;
+                    }
+                    if (ultimaletra === "%") {
+                        if (d !== "%") {
+                            vtela = vtela + d;
+                        }
+                    }
+
+                    if(ClassificaUltimaLetra(vtela) === 3) {
                         if(d === "/" || d === "*" || d === "%") {
                             break;
                         }
                         setValorTela(valorTela + d);
+                        break;
                     }
-                    setValorTela(vtela + d);
+                    setValorTela(vtela);
                 break; 
                 case 3:
                     if(d === "/" || d === "*" || d === "%") {
@@ -200,7 +267,7 @@ export default function App() {
     }
 
     const addParenteses=()=>{
-        switch (DetectaUltimo(valorTela)) {
+        switch (ClassificaUltimaLetra(valorTela)) {
             case 1:
                 setValorTela(valorTela + "(");
             break;
@@ -215,6 +282,7 @@ export default function App() {
             default:
                 if(operacao) {
                     setValorTela("(" + valorTela);
+                    setOperacao(false);
                     break;
                 }
                 let numAbre = 0;
@@ -249,15 +317,25 @@ export default function App() {
             return;
         }
         try{
-            let vtela = EfetuaPorcentagem(valorTela);
+            let vtela = valorTela;
             vtela = TratamentoUltimoDigito(vtela);        
-            vtela = RemoveZeroEsquerda(vtela);  
             vtela = TratamentoParenteses(vtela);  
+            if (vtela !== valorTela) {
+                setValorTela(vtela);
+                setErroDeFormatacao(true);
+            } else {
+                setErroDeFormatacao(false);
+            }
+            vtela = CorvertePorcentagem(vtela);
+            vtela = RemoveZeroEsquerda(vtela);  
             const r = eval(vtela || 0);
+            setErroDeSistema(false);
             setResultado(r)
             setOperacao(true);
         }catch{
+            setOperacao(true);
             setResultado('ERRO');
+            setErroDeSistema(true);
         }
     }
 
@@ -268,27 +346,38 @@ export default function App() {
             </div>
             {Tela(valorTela, resultado)}
             <div className="buttons-space">
-                {Button("AC", ()=>limparMemoria())}
-                {Button("()", ()=>addParenteses())}
-                {Button("%", ()=>addDigitoTela("%"))}
-                {Button("/", ()=>addDigitoTela("/"))}<br/>
-                {Button("7", ()=>addDigitoTela("7"))}
-                {Button("8", ()=>addDigitoTela("8"))}
-                {Button("9", ()=>addDigitoTela("9"))}
-                {Button("*", ()=>addDigitoTela("*"))}<br/>
-                {Button("4", ()=>addDigitoTela("4"))}
-                {Button("5", ()=>addDigitoTela("5"))}
-                {Button("6", ()=>addDigitoTela("6"))}
-                {Button("-", ()=>addDigitoTela("-"))}<br/>
-                {Button("1", ()=>addDigitoTela("1"))}
-                {Button("2", ()=>addDigitoTela("2"))}
-                {Button("3", ()=>addDigitoTela("3"))}
-                {Button("+", ()=>addDigitoTela("+"))}<br/>
-                {Button("0", ()=>addDigitoTela("0"))}
-                {Button(".", ()=>addDigitoTela("."))}
-                {Button("<-", ()=>Operacao("bs"))}
-                {Button("=", ()=>Operacao("-"))}
+                <div className="row">
+                    {Button("AC", ()=>limparMemoria())}
+                    {Button("()", ()=>addParenteses())}
+                    {Button("%", ()=>addDigitoTela("%"))}
+                    {Button("/", ()=>addDigitoTela("/"))}
+                </div>
+                <div className="row">
+                    {Button("7", ()=>addDigitoTela("7"))}
+                    {Button("8", ()=>addDigitoTela("8"))}
+                    {Button("9", ()=>addDigitoTela("9"))}
+                    {Button("*", ()=>addDigitoTela("*"))}     
+                </div>
+                <div className="row">                
+                    {Button("4", ()=>addDigitoTela("4"))}
+                    {Button("5", ()=>addDigitoTela("5"))}
+                    {Button("6", ()=>addDigitoTela("6"))}
+                    {Button("-", ()=>addDigitoTela("-"))}
+                </div>
+                <div className="row">
+                    {Button("1", ()=>addDigitoTela("1"))}
+                    {Button("2", ()=>addDigitoTela("2"))}
+                    {Button("3", ()=>addDigitoTela("3"))}
+                    {Button("+", ()=>addDigitoTela("+"))}
+                </div>
+                <div className="row">
+                    {Button("0", ()=>addDigitoTela("0"))}
+                    {Button(".", ()=>addDigitoTela("."))}
+                    {Button("<-", ()=>Operacao("bs"))}
+                    {Button("=", ()=>Operacao("-"))}
+                </div>
             </div>
+
         </div>
     )
 }
